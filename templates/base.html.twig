@@ -1,17 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="mytheme">
     <head>
         <meta charset="UTF-8">
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
         {% block stylesheets %}
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+            <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap" rel="stylesheet">
+            {# <link rel="stylesheet" href="{{ asset('styles/app.css') }}"> #}
         {% endblock %}
 
         {% block javascripts %}
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
     </head>
-    <body>
-        {% block body %}{% endblock %}
+      <body
+    x-data="{ page: 'ecommerce', 'loaded': true, 'darkMode': true, 'stickyMenu': false, 'sidebarToggle': false, 'scrollTop': false }"
+    x-init="
+         darkMode = JSON.parse(localStorage.getItem('darkMode'));
+         $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))"
+    :class="{'dark text-bodydark bg-boxdark-2': darkMode === true}"
+  >
+        <div
+        x-show="loaded"
+        x-init="window.addEventListener('DOMContentLoaded', () => {setTimeout(() => loaded = false, 500)})"
+        class="fixed left-0 top-0 z-999999 flex h-screen w-screen items-center justify-center bg-white dark:bg-black"
+        >
+        <div
+            class="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"
+        ></div>
+        </div>
+        <div class="flex h-screen overflow-hidden">
+            {% include 'sidebar.html.twig' %}
+            <div
+                class="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden"
+            >
+                {% include 'header.html.twig' %}
+                <main>
+                    <div class="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
+                    {% block body %}{% endblock %}
+                    </div>
+                </main>
+            </div>
+      <!-- ===== Content Area End ===== -->
+        </div>
     </body>
 </html>

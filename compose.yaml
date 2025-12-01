@@ -1,26 +1,64 @@
-version: '3'
-
 services:
-###> doctrine/doctrine-bundle ###
-  database:
-    image: postgres:${POSTGRES_VERSION:-16}-alpine
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-      # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
-    healthcheck:
-      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}"]
-      timeout: 5s
-      retries: 5
-      start_period: 60s
+  nginx:
+    image: nginx:alpine
     volumes:
-      - database_data:/var/lib/postgresql/data:rw
-      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./docker/db/data:/var/lib/postgresql/data:rw
-###< doctrine/doctrine-bundle ###
+      - ${PWD}:/app
+      - ${PWD}/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 8080:80
+    depends_on:
+      - php
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.nginx.rule=Host(`dev.nginx`)"
+    #   - "traefik.http.routers.nginx.entrypoints=web"
+
+  php:
+    build: .
+    volumes:
+      - ${PWD}:/app
+      - ${PWD}/docker-fpm.ini:/usr/local/etc/php/conf.d/docker-fpm.ini
+      - ${PWD}/php.ini:/usr/local/etc/php/conf.d/app.ini
+    working_dir: /app
+    user: "1000:1000"
+    environment:
+      LOG_CHANNEL: stdout
+
+  openldap:
+    image: docker.io/bitnami/openldap:2.6
+    ports:
+      - "1389:1389"
+      - "1636:1636"
+    environment:
+      - LDAP_ADMIN_USERNAME=admin
+      - LDAP_ADMIN_PASSWORD=adminpassword
+      - LDAP_USERS=user01,user02
+      - LDAP_PASSWORDS=password1,password2
+      - LDAP_ROOT=dc=example,dc=org
+      - LDAP_ADMIN_DN=cn=admin,dc=example,dc=org
+    volumes:
+      - "openldap_data:/bitnami/openldap"
+
+  openldap-ui:
+    image: wheelybird/ldap-user-manager:v1.5
+    container_name: openldap-ui
+    environment:
+      - LDAP_URI=ldap://openldap:1389
+      - LDAP_BASE_DN=dc=example,dc=org
+      - LDAP_REQUIRE_STARTTLS=FALSE
+      #   - LDAP_ADMINS_GROUP=adminscn=admins-group,ou=groups,dc=example,dc=com
+      - LDAP_ADMINS_GROUP=admins
+      - LDAP_ADMIN_BIND_DN=cn=admin,dc=example,dc=org
+      - LDAP_ADMIN_BIND_PWD=adminpassword
+      - LDAP_IGNORE_CERT_ERRORS=true
+      - NO_HTTPS=TRUE
+      - LDAP_DEBUG=TRUE
+      #   - PASSWORD_HASH=SSHA
+      - SERVER_HOSTNAME=localhost:18080
+    depends_on:
+      - openldap
+    ports:
+      - 18080:80
 
 volumes:
-###> doctrine/doctrine-bundle ###
-  database_data:
-###< doctrine/doctrine-bundle ###
+  openldap_data:

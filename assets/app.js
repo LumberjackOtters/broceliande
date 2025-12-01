@@ -6,5 +6,13 @@ import './bootstrap.js';
  * which should already be in your base.html.twig.
  */
 import './styles/app.css';
+import './styles/admin.css';
+
+import Alpine from 'alpinejs'; 
+import persist from "@alpinejs/persist";
+
+Alpine.plugin(persist);
+window.Alpine = Alpine;
+Alpine.start();
 
 console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');

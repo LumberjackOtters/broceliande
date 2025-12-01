@@ -5,13 +5,34 @@ security:
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
         users_in_memory: { memory: null }
+        ldap:
+            ldap:
+                service: Symfony\Component\Ldap\Ldap
+                base_dn: dc=example,dc=org
+                search_dn: "cn=admin,dc=example,dc=org"
+                search_password: adminpassword
+                default_roles: ROLE_USER
+                uid_key: uid
+                # extra_fields: ['givenname', 'sn']
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
             lazy: true
-            provider: users_in_memory
+            provider: ldap
+            form_login_ldap:
+                login_path: app_login
+                check_path: app_login
+                enable_csrf: true
+                service: Symfony\Component\Ldap\Ldap
+                dn_string: 'uid={user_identifier},ou=people,dc=example,dc=org'
+            logout:
+                path: app_logout
+                # where to redirect after logout
+                # target: app_any_route
+                # where to redirect after logout
+                # target: app_any_route
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall

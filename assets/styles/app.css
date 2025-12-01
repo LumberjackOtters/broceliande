@@ -1,3 +1,22 @@
-body {
-    background-color: skyblue;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwind forms;
+@tailwind typography;
+@tailwind aspect-ratio;
+@tailwind container-queries;
+@tailwind colors;
+
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Slab:ital,wght@0,100..700;1,100..700&family=League+Spartan:wght@100..900&display=swap');
+
+.josefin-slab {
+    font-family: "Josefin Slab", serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+}
+
+.league-spartan {
+    font-family: "League Spartan", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
 }
